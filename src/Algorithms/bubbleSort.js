@@ -2,15 +2,11 @@ export function getBubbleSortAnimations(array) {
   const animations = [];
   if (array.length <= 1) return array;
   const auxiliaryArray = array.slice();
-  bubbleSortHelper(array, animations, auxiliaryArray);
+  doBubbleSort(animations, auxiliaryArray);
   return animations;
 }
 
-function bubbleSortHelper(mainArray, animations, auxiliaryArray) {
-  doBubbleSort(mainArray, animations, auxiliaryArray);
-}
-
-function doBubbleSort(array, animations, auxiliaryArray) {
+export function doBubbleSort(animations, auxiliaryArray) {
   var swapped;
   do {
     swapped = false;
@@ -24,4 +20,5 @@ function doBubbleSort(array, animations, auxiliaryArray) {
       }
     }
   } while (swapped);
+  return auxiliaryArray;
 }

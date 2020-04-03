@@ -20,7 +20,7 @@ function mergeSortHelper(
   doMerge(mainArray, startIdx, middleIdx, endIdx, auxiliaryArray, animations);
 }
 
-function doMerge(
+export function doMerge(
   mainArray,
   startIdx,
   middleIdx,

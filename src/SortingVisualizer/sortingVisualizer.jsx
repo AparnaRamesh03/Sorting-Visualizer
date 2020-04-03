@@ -1,6 +1,7 @@
 import React from "react";
 import { getMergeSortAnimations } from "../Algorithms/mergeSort";
 import { getBubbleSortAnimations } from "../Algorithms/bubbleSort";
+import { doBubbleSort } from "../Algorithms/bubbleSort";
 
 import "./sortingVisualizer.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -11,20 +12,20 @@ import "bootstrap/dist/js/bootstrap.min.js";
 const ANIMATION_SPEED_MS = 1;
 
 // Change this value for the number of bars (value) in the array.
-const NUMBER_OF_ARRAY_BARS = 350;
+const NUMBER_OF_ARRAY_BARS = 330;
 
 // This is the main color of the array bars.
-const PRIMARY_COLOR = "purple";
+const PRIMARY_COLOR = "red";
 
 // This is the color of array bars that are being compared throughout the animations.
-const SECONDARY_COLOR = "red";
+const SECONDARY_COLOR = "green";
 
 export default class SortingVisualizer extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      array: []
+      array: [],
     };
   }
 
@@ -35,9 +36,16 @@ export default class SortingVisualizer extends React.Component {
   resetArray() {
     const array = [];
     for (let i = 0; i < NUMBER_OF_ARRAY_BARS; i++) {
-      array.push(randomIntFromInterval(5, 700));
+      array.push(randomIntFromInterval(5, 750));
     }
+
     this.setState({ array });
+    const arrayBars = document.getElementsByClassName("array-bar");
+    var arrayLength = arrayBars.length;
+    for (let j = 0; j < arrayLength; j++) {
+      var jBarStyle = arrayBars[j].style;
+      jBarStyle.backgroundColor = "red";
+    }
   }
 
   mergeSort() {
@@ -50,16 +58,22 @@ export default class SortingVisualizer extends React.Component {
         const [barOneIdx, barTwoIdx] = animations[i];
         const barOneStyle = arrayBars[barOneIdx].style;
         const barTwoStyle = arrayBars[barTwoIdx].style;
-        const color = i % 3 === 0 ? SECONDARY_COLOR : PRIMARY_COLOR;
+        const color = i % 3 === 0 ? PRIMARY_COLOR : SECONDARY_COLOR;
         setTimeout(() => {
           barOneStyle.backgroundColor = color;
           barTwoStyle.backgroundColor = color;
+          if (i === animations.length - 1) {
+            this.makeAllBarsGreen();
+          }
         }, i * ANIMATION_SPEED_MS);
       } else {
         setTimeout(() => {
           const [barOneIdx, newHeight] = animations[i];
           const barOneStyle = arrayBars[barOneIdx].style;
           barOneStyle.height = `${newHeight}px`;
+          if (i === animations.length - 1) {
+            this.makeAllBarsGreen();
+          }
         }, i * ANIMATION_SPEED_MS);
       }
     }
@@ -73,43 +87,69 @@ export default class SortingVisualizer extends React.Component {
     // We leave it as an exercise to the viewer of this code to implement this method.
   }
 
-  bubbleSort() {
+  async bubbleSort() {
     // We leave it as an exercise to the viewer of this code to implement this method.
     const array = this.state.array;
     const animations = getBubbleSortAnimations(array);
-
+    console.log(animations);
     const arrayBars = document.getElementsByClassName("array-bar");
+
     for (let i = 0; i < animations.length; i++) {
       setTimeout(() => {
         var [oldPosition, newPosition] = animations[i];
-        var barOneStyle = arrayBars[oldPosition].style;
-        var barTwoStyle = arrayBars[newPosition].style;
+
+        var oldBarStyle = arrayBars[oldPosition].style;
+        var newBarStyle = arrayBars[newPosition].style;
+
         var temp = this.state.array[oldPosition];
         this.state.array[oldPosition] = this.state.array[newPosition];
         this.state.array[newPosition] = temp;
 
-        barOneStyle.height = `${this.state.array[oldPosition]}px`;
-        barTwoStyle.height = `${this.state.array[newPosition]}px`;
+        oldBarStyle.height = `${this.state.array[oldPosition]}px`;
+        newBarStyle.height = `${this.state.array[newPosition]}px`;
 
-        barOneStyle.backgroundColor = "red";
-        barTwoStyle.backgroundColor = "green";
+        oldBarStyle.backgroundColor = "red";
+        newBarStyle.backgroundColor = "green";
+
+        var currentPosition = oldPosition;
+        for (let j = 0; j < currentPosition; j++) {
+          var jBarStyle = arrayBars[j].style;
+          jBarStyle.backgroundColor = "red";
+        }
+        if (i === animations.length - 1) {
+          this.makeAllBarsGreen();
+        }
       }, i * ANIMATION_SPEED_MS);
     }
   }
 
+  makeAllBarsGreen() {
+    console.log("Sorted");
+    const arrayBars = document.getElementsByClassName("array-bar");
+    var arrayLength = arrayBars.length;
+    for (let j = 0; j < arrayLength; j++) {
+      var jBarStyle = arrayBars[j].style;
+      jBarStyle.backgroundColor = "limegreen";
+    }
+  }
   // NOTE: This method will only work if your sorting algorithms actually return
   // the sorted arrays; if they return the animations (as they currently do), then
   // this method will be broken.
   testSortingAlgorithms() {
     for (let i = 0; i < 100; i++) {
       const array = [];
-      const length = randomIntFromInterval(1, 1000);
+      const length = randomIntFromInterval(1, 100);
+      const animations = [];
       for (let i = 0; i < length; i++) {
         array.push(randomIntFromInterval(-1000, 1000));
       }
       const javaScriptSortedArray = array.slice().sort((a, b) => a - b);
       const mergeSortedArray = getMergeSortAnimations(array.slice());
-      console.log(arraysAreEqual(javaScriptSortedArray, mergeSortedArray));
+      const bubbleSortedArray = doBubbleSort(animations, array.slice());
+      console.log(
+        "Is Bubble Sort Valid ? " +
+          arraysAreEqual(javaScriptSortedArray, bubbleSortedArray)
+      );
     }
   }
 
@@ -135,13 +175,22 @@ export default class SortingVisualizer extends React.Component {
           </button>
           <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div className="navbar-nav">
-              <button
-                type="button"
-                className="btn btn-warning"
-                onClick={() => this.resetArray()}
-              >
-                Generate New Array
-              </button>
+              <div className="btn-group" role="group">
+                <button
+                  type="button"
+                  className="btn btn-warning"
+                  onClick={() => this.resetArray()}
+                >
+                  Generate New Array
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={() => this.testSortingAlgorithms()}
+                >
+                  Test Algorithms
+                </button>
+              </div>
             </div>
             <div
               className="btn-group"
@@ -182,7 +231,7 @@ export default class SortingVisualizer extends React.Component {
               key={idx}
               style={{
                 backgroundColor: PRIMARY_COLOR,
-                height: `${value}px`
+                height: `${value}px`,
               }}
             ></div>
           ))}

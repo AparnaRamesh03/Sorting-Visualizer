@@ -2,6 +2,9 @@ import React from "react";
 import { getMergeSortAnimations } from "../Algorithms/mergeSort";
 import { getBubbleSortAnimations } from "../Algorithms/bubbleSort";
 import { doBubbleSort } from "../Algorithms/bubbleSort";
+import { getQuickSortAnimations } from "../Algorithms/quickSort";
+import { doQuickSort } from "../Algorithms/quickSort";
+import { quickSortPartition } from "../Algorithms/quickSort";
 
 import "./sortingVisualizer.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -12,7 +15,7 @@ import "bootstrap/dist/js/bootstrap.min.js";
 const ANIMATION_SPEED_MS = 0.3;
 
 // Change this value for the number of bars (value) in the array.
-const NUMBER_OF_ARRAY_BARS = 330;
+const NUMBER_OF_ARRAY_BARS = 350;
 
 // This is the main color of the array bars.
 const PRIMARY_COLOR = "red";
@@ -81,6 +84,52 @@ export default class SortingVisualizer extends React.Component {
 
   quickSort() {
     // We leave it as an exercise to the viewer of this code to implement this method.
+    const array = this.state.array;
+    const animations = getQuickSortAnimations(array);
+    console.log(animations);
+    const arrayBars = document.getElementsByClassName("array-bar");
+
+    for (let i = 0; i < animations.length; i++) {
+      setTimeout(() => {
+        var [oldPosition, newPosition] = animations[i];
+
+        var oldBarStyle = arrayBars[oldPosition].style;
+        var newBarStyle = arrayBars[newPosition].style;
+        var index;
+        const dummyAnimations = [];
+        if (array.length > 1) {
+          index = quickSortPartition(
+            array,
+            0,
+            array.length - 1,
+            dummyAnimations
+          ); //index returned from partition
+          if (0 < index - 1) {
+            //more elements on the left side of the pivot
+            doQuickSort(dummyAnimations, array, 0, index - 1);
+          }
+          if (index < array.length) {
+            //more elements on the right side of the pivot
+            doQuickSort(dummyAnimations, array, 0, array.length - 1);
+          }
+        }
+
+        oldBarStyle.height = `${this.state.array[oldPosition]}px`;
+        newBarStyle.height = `${this.state.array[newPosition]}px`;
+
+        oldBarStyle.backgroundColor = "green";
+        newBarStyle.backgroundColor = "red";
+
+        var currentPosition = oldPosition;
+        for (let j = 0; j < currentPosition; j++) {
+          var jBarStyle = arrayBars[j].style;
+          jBarStyle.backgroundColor = "green";
+        }
+        if (i === animations.length - 1) {
+          this.makeAllBarsGreen();
+        }
+      }, 0.0001);
+    }
   }
 
   heapSort() {
@@ -197,7 +246,11 @@ export default class SortingVisualizer extends React.Component {
               role="group"
               style={{ right: "10px", position: "absolute" }}
             >
-              <button type="button" className="btn btn-primary">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => this.quickSort()}
+              >
                 Quick Sort
               </button>
               <button
